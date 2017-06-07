@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Level - 1</title>
+
+<!-- for CreateJS and ZIMjs http://zimjs.com - free to modify - Dan Zen 2016 -->
+<!-- see http://zimjs.com/code/frame.html for more templates and meta tags -->
+
+<!-- as of ZIM 4.3.0 load createjs namespace first -->
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script>var zon = true; // true for comments from zim code</script>
+<script src="http://zimjs.com/code/live/zim_4.8.0_doc.js"></script><!-- add _doc to see code -->
+<!-- use zimjs.com/code/distill for minified individual functions! -->
+
+<style>
+	body {margin:0px; padding:0px; background-color:#000;}
+</style>
+
+<script>
+
+var scaling = "fit"; // fit scales to fit the browser window while keeping the aspect ratio
+var width = 1024; // can go higher...
+var height = 768;
+var color = "#acd241"
+var frame = new zim.Frame(scaling, width, height, color); // see docs for more options and info
+frame.on("ready", function() {
+	zog("ready from ZIM Frame");
+
+	var stage = frame.stage;
+	var stageW = frame.width;
+	var stageH = frame.height;
+
+	// put your code here (you can delete this code)
+	// Load the images into the file
+	frame.loadAssets(['buzzy_player.png', 'stage_1_background.png', 'green_car_2.png', 'red_car_1.png', 'squished_buzzy.png', 'cars_driving.mp3'], 'assets/');
+	frame.on('complete', function() {
+
+		// add the background we want for the game
+		var mainbackground = frame.asset('stage_1_background.png');
+		stage.addChild(mainbackground);
+
+        var sound = frame.asset('cars_driving.mp3').play();
+        var label;
+        var button;
+
+
+		// create the obstacles/boulders that go back and forth on the page.
+		var car_1 = frame.asset('green_car_2.png');
+		car_1.width = 100;
+		car_1.height = 100;
+		car_1.centerReg(stage);
+		car_1.x = stageW-car_1.width - 500 ;
+		car_1.y = stageH-car_1.height - 700;
+
+
+		var car_2 = frame.asset('red_car_1.png');
+		car_2.width = 100;
+		car_2.height = 100;
+		car_2.centerReg(stage);
+		car_2.x = stageW-car_2.width - 300;
+		car_2.y = stageH-car_2.height+260;
+
+
+
+		// put player in container and add the container to the stage
+		var playerContainer = new zim.Container();
+
+		var player = frame.asset('buzzy_player.png');
+		player.width = 80;
+		playerContainer.addChild(player);
+		playerContainer.center(stage);
+
+        // place the player in their start position
+		player.x += 350;
+		player.y += 300;
+
+		// add bounds to the stage so that the player doesn't move out of the set bounds
+		function move(object, xPos, yPos){
+			if ((Math.abs(xPos) >= stageW/2 )|| (Math.abs(yPos) >= stageH/2 )) return;
+			object.x = xPos;
+			object.y = yPos;
+		};
+
+		// define the new x and y positions of the players taking into account the bounds
+		var PlayerX = player.x;
+		var PlayerY = player.y;
+
+		// create an array of directions that the players can move in
+		var directions = [[-1,0],[0,-1],[1,0],[0,1]];
+		var playerDirection = [0,0];
+		var moveSize = 2;
+		var speed1;
+		var speed2;
+		var speed3;
+        var speed4;
+		var key;
+		var index;
+
+
+		setTimeout(function() {
+			zim.Ticker.add(movingObjects, stage);
+		}, 1000);
+		zim.Ticker.add(movePlayer, stage);
+
+		window.addEventListener('keydown', function(ev) {
+			key = ev.keyCode;
+			if((key => 37) && (key <= 40)) {
+				playerDirection = directions[key-37];
+			}
+			stage.update();
+		});
+
+		// add the funtionality of the keys moving to each of the players
+		function movePlayer() {
+			PlayerX = player.x + moveSize*playerDirection[0];
+			PlayerY = player.y + moveSize*playerDirection[1];
+			move(player, PlayerX, PlayerY);
+		};
+
+		// create a function for the moving objects on the stage
+		function movingObjects() {
+			speed1 = 2500;
+			speed2 = 4500;
+			speed3 = 3000;
+			car_1.animate({
+				obj:{y: stageH+car_1.height},
+				time: speed1,
+				props:{loop: true, rewind: false}
+			});
+
+			car_2.animate({
+				obj:{y: car_2.height-300},
+				time: speed2,
+				props:{loop: true, rewind: false}
+			});
+
+
+			if(hitPlayer(player)) {
+                playerContainer.removeChild(player);
+                player = frame.asset('squished_buzzy.png');
+                playerContainer.addChild(player);
+				zim.Ticker.remove(movingObjects);
+				zim.Ticker.remove(movePlayer);
+				declareLoser('You');
+
+				setTimeout(function(){
+					label = new zim.Label({
+		            text: "restart level",
+		            size: 20,
+		            color: "white",
+		            fontOptions: 'bold'
+		        });
+
+		        	button = new zim.Button({
+		            label: label,
+		            color: '#FF5751',
+		            rollColor: "pink",
+		            width: 130,
+		            height: 65
+		        });
+		        button.center(stage);
+		        button.x = 50;
+		        button.y = 590;
+
+		        // add functionality to the button
+		        button.on('click', function(){
+		            window.location.href = 'stage_1.html';
+		        });
+		        }, 2000);
+			};
+
+            if(checkWinner(player.x)) {
+                zim.Ticker.remove(movingObjects);
+				zim.Ticker.remove(movePlayer);
+                theWinner();
+                setTimeout(function(){window.location.href = 'stage_2.html';}, 2000);
+            }
+
+		};
+
+
+		function hitPlayer(obj) {
+			if(car_1.hitTestBounds(obj)) {
+				return true;
+			}
+
+			if(car_2.hitTestBounds(obj)) {
+				return true;
+			}
+
+		};
+
+        // create function that checks when the player is at the other side of the road, that
+        // means that the player has won the game.
+        function checkWinner(playerPos) {
+            if(player.x == -300) {
+                return true;
+            }
+        }
+
+		// create label foe when a car hits the player
+		var loser = new zim.Label({
+			text: 'Loser!',
+			color: 'white',
+			align: 'center'
+		});
+		loser.centerReg(stage);
+		loser.scale(0);
+
+        var winner = new zim.Label({
+            text: 'You win!',
+            color: 'white',
+            align: 'center'
+        });
+        winner.centerReg(stage);
+        winner.scale(0);
+
+		function declareLoser(loserText){
+			if (loserText == null){
+				loser.text = 'You Lose';
+				loser.color = '#fff';
+			} else {
+				loser.text = loserText + ' Lose!';
+				loser.color = loserText;
+			};
+			loser.animate({
+				obj:{scale: 3},
+				rewind: true,
+				time: 1000
+			});
+		};
+
+        function theWinner() {
+            winner.text = 'You win!',
+            winner.color = '#fff';
+            winner.animate({
+                obj:{scale: 3},
+                rewind: true,
+                time: 1000
+            });
+        }
+
+		stage.update();
+	});
+
+}); // end of ready
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
+</head>
+
+<body>
+<!-- canvas with id="myCanvas" is made by zim Frame -->
+</body>
+</html>

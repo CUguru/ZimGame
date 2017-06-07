@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Level - 1</title>
+
+<!-- for CreateJS and ZIMjs http://zimjs.com - free to modify - Dan Zen 2016 -->
+<!-- see http://zimjs.com/code/frame.html for more templates and meta tags -->
+
+<!-- as of ZIM 4.3.0 load createjs namespace first -->
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script>var zon = true; // true for comments from zim code</script>
+<script src="http://zimjs.com/code/live/zim_4.8.0_doc.js"></script><!-- add _doc to see code -->
+<!-- use zimjs.com/code/distill for minified individual functions! -->
+
+<style>
+	body {margin:0px; padding:0px; background-color:#000;}
+</style>
+
+<script>
+
+// SCALING OPTIONS
+// scaling can have values as follows with full being the default
+// "fit"		sets canvas and stage to dimensions and scales to fit inside window size
+// "outside"	sets canvas and stage to dimensions and scales to fit outside window size
+// "full"		sets stage to window size with no scaling
+// "tagID"		add canvas to HTML tag of ID - set to dimensions if provided - no scaling
+
+var scaling = "fit"; // fit scales to fit the browser window while keeping the aspect ratio
+var width = 1024; // can go higher...
+var height = 768;
+var color = "#acd241"
+var frame = new zim.Frame(scaling, width, height, color); // see docs for more options and info
+frame.on("ready", function() {
+	zog("ready from ZIM Frame");
+
+	var stage = frame.stage;
+	var stageW = frame.width;
+	var stageH = frame.height;
+
+	// put your code here (you can delete this code)
+	// Load the images into the file
+	frame.loadAssets(['buzzy_player.png', 'start_image.png'], 'assets/');
+	frame.on('complete', function() {
+
+		// add the background we want for the game
+		var mainbackground = frame.asset('start_image.png');
+		stage.addChild(mainbackground);
+
+
+        var rules = new zim.Label({
+            text: "Use the arrow keys to move the player on the game!",
+            size: 25,
+            color: "white"
+        });
+        rules.center(stage);
+        rules.y = 700;
+
+        var label = new zim.Label({
+            text: "PLAY!!",
+            size: 40,
+            color: "white",
+            fontOptions: 'bold'
+        });
+
+        var button = new zim.Button({
+            label: label,
+            color: '#FF5751',
+            rollColor: "pink",
+            width: 160,
+            height: 65
+        });
+        button.center(stage);
+        button.x = 750;
+        button.y = 590;
+
+        // add functionality to the button
+        button.on('click', function(){
+            window.location.href = 'stage_1.html';
+        });
+
+		stage.update();
+	});
+
+}); // end of ready
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
+</head>
+
+<body>
+<!-- canvas with id="myCanvas" is made by zim Frame -->
+</body>
+</html>
